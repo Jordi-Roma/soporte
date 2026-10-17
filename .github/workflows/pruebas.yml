@@ -1,0 +1,43 @@
+name: Pruebas del backend
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: manaco_pruebas
+          POSTGRES_USER: manaco_pruebas
+          POSTGRES_PASSWORD: clave_exclusiva_para_pruebas
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U manaco_pruebas -d manaco_pruebas"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      MANACO_URL_BD_PRUEBAS: postgresql+psycopg://manaco_pruebas:clave_exclusiva_para_pruebas@localhost:5432/manaco_pruebas
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.lock.txt
+      - name: Instalar dependencias verificadas
+        run: python -m pip install -r requirements.lock.txt
+      - name: Comprobar dependencias
+        run: python -m pip check
+      - name: Ejecutar pruebas en PostgreSQL
+        run: python -m pytest -q

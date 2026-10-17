@@ -1,0 +1,1930 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MANACO · Inventario inteligente",
+    "description": "API de inventario por sucursal. Cantidades en pares y moneda de referencia BOB. Reconocimiento visual pendiente de entrenamiento.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/salud": {
+      "get": {
+        "tags": [
+          "Sistema"
+        ],
+        "summary": "Salud",
+        "operationId": "salud_salud_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/autenticacion/iniciar-sesion": {
+      "post": {
+        "tags": [
+          "Autenticación"
+        ],
+        "summary": "Iniciar Sesion",
+        "operationId": "iniciar_sesion_autenticacion_iniciar_sesion_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credenciales"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/autenticacion/mi-perfil": {
+      "get": {
+        "tags": [
+          "Autenticación"
+        ],
+        "summary": "Mi Perfil",
+        "operationId": "mi_perfil_autenticacion_mi_perfil_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ]
+      }
+    },
+    "/autenticacion/cerrar-sesion": {
+      "post": {
+        "tags": [
+          "Autenticación"
+        ],
+        "summary": "Cerrar Sesion",
+        "operationId": "cerrar_sesion_autenticacion_cerrar_sesion_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ]
+      }
+    },
+    "/autenticacion/cambiar-contrasena": {
+      "post": {
+        "tags": [
+          "Autenticación"
+        ],
+        "summary": "Cambiar Contrasena",
+        "operationId": "cambiar_contrasena_autenticacion_cambiar_contrasena_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CambiarContrasena"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ]
+      }
+    },
+    "/usuarios": {
+      "post": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Crear Usuario",
+        "operationId": "crear_usuario_usuarios_post",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearUsuario"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Listar Usuarios",
+        "operationId": "listar_usuarios_usuarios_get",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "desplazamiento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Desplazamiento"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usuarios/{id_usuario}/activo": {
+      "patch": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Activar Usuario",
+        "operationId": "activar_usuario_usuarios__id_usuario__activo_patch",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_usuario",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Usuario"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualizarActivo"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sucursales": {
+      "get": {
+        "tags": [
+          "Sucursales"
+        ],
+        "summary": "Sucursales",
+        "operationId": "sucursales_sucursales_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Sucursales"
+        ],
+        "summary": "Crear Sucursal",
+        "operationId": "crear_sucursal_sucursales_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearSucursal"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ]
+      }
+    },
+    "/productos": {
+      "post": {
+        "tags": [
+          "Catálogo"
+        ],
+        "summary": "Crear Producto",
+        "operationId": "crear_producto_productos_post",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearProducto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Catálogo"
+        ],
+        "summary": "Listar Productos",
+        "operationId": "listar_productos_productos_get",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "buscar",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Buscar"
+            }
+          },
+          {
+            "name": "desplazamiento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Desplazamiento"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/productos/{id_producto}": {
+      "get": {
+        "tags": [
+          "Catálogo"
+        ],
+        "summary": "Producto",
+        "operationId": "producto_productos__id_producto__get",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_producto",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Producto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Catálogo"
+        ],
+        "summary": "Actualizar Producto",
+        "operationId": "actualizar_producto_productos__id_producto__put",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_producto",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Producto"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualizarProducto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/variantes": {
+      "post": {
+        "tags": [
+          "Catálogo"
+        ],
+        "summary": "Crear Variante",
+        "operationId": "crear_variante_variantes_post",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearVariante"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Catálogo"
+        ],
+        "summary": "Listar Variantes",
+        "operationId": "listar_variantes_variantes_get",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_producto",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Id Producto"
+            }
+          },
+          {
+            "name": "desplazamiento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Desplazamiento"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/existencias": {
+      "get": {
+        "tags": [
+          "Inventario"
+        ],
+        "summary": "Listar Existencias",
+        "operationId": "listar_existencias_existencias_get",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Id Sucursal"
+            }
+          },
+          {
+            "name": "solo_bajo_minimo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Solo Bajo Minimo"
+            }
+          },
+          {
+            "name": "desplazamiento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Desplazamiento"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/existencias/{id_sucursal}/{id_variante}/minimo": {
+      "put": {
+        "tags": [
+          "Inventario"
+        ],
+        "summary": "Minimo Existencia",
+        "operationId": "minimo_existencia_existencias__id_sucursal___id_variante__minimo_put",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_sucursal",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Sucursal"
+            }
+          },
+          {
+            "name": "id_variante",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Variante"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MinimoExistencia"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/movimientos": {
+      "post": {
+        "tags": [
+          "Movimientos"
+        ],
+        "summary": "Crear Movimiento",
+        "operationId": "crear_movimiento_movimientos_post",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearMovimiento"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Movimientos"
+        ],
+        "summary": "Listar Movimientos",
+        "operationId": "listar_movimientos_movimientos_get",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Id Sucursal"
+            }
+          },
+          {
+            "name": "id_variante",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Id Variante"
+            }
+          },
+          {
+            "name": "desplazamiento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Desplazamiento"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transferencias": {
+      "post": {
+        "tags": [
+          "Transferencias"
+        ],
+        "summary": "Crear Transferencia",
+        "operationId": "crear_transferencia_transferencias_post",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearTransferencia"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Transferencias"
+        ],
+        "summary": "Listar Transferencias",
+        "operationId": "listar_transferencias_transferencias_get",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "desplazamiento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Desplazamiento"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transferencias/{id_transferencia}/recibir": {
+      "post": {
+        "tags": [
+          "Transferencias"
+        ],
+        "summary": "Recibir Transferencia",
+        "operationId": "recibir_transferencia_transferencias__id_transferencia__recibir_post",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_transferencia",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Transferencia"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ajustes": {
+      "post": {
+        "tags": [
+          "Ajustes"
+        ],
+        "summary": "Solicitar Ajuste",
+        "operationId": "solicitar_ajuste_ajustes_post",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearAjuste"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Ajustes"
+        ],
+        "summary": "Listar Ajustes",
+        "operationId": "listar_ajustes_ajustes_get",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "desplazamiento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Desplazamiento"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ajustes/{id_ajuste}/revisar": {
+      "post": {
+        "tags": [
+          "Ajustes"
+        ],
+        "summary": "Revisar Ajuste",
+        "operationId": "revisar_ajuste_ajustes__id_ajuste__revisar_post",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_ajuste",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Id Ajuste"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisarAjuste"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tablero": {
+      "get": {
+        "tags": [
+          "Tablero"
+        ],
+        "summary": "Tablero",
+        "operationId": "tablero_tablero_get",
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id_sucursal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Id Sucursal"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reconocimiento/estado": {
+      "get": {
+        "tags": [
+          "Reconocimiento"
+        ],
+        "summary": "Estado Reconocimiento",
+        "operationId": "estado_reconocimiento_reconocimiento_estado_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActualizarActivo": {
+        "properties": {
+          "activo": {
+            "type": "boolean",
+            "title": "Activo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "activo"
+        ],
+        "title": "ActualizarActivo"
+      },
+      "ActualizarProducto": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Nombre"
+          },
+          "categoria": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Categoria"
+          },
+          "descripcion": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Descripcion",
+            "default": ""
+          },
+          "url_foto": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url Foto"
+          },
+          "activo": {
+            "type": "boolean",
+            "title": "Activo",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nombre",
+          "categoria"
+        ],
+        "title": "ActualizarProducto"
+      },
+      "CambiarContrasena": {
+        "properties": {
+          "contrasena_actual": {
+            "type": "string",
+            "maxLength": 128,
+            "title": "Contrasena Actual"
+          },
+          "contrasena_nueva": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 12,
+            "title": "Contrasena Nueva"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "contrasena_actual",
+          "contrasena_nueva"
+        ],
+        "title": "CambiarContrasena"
+      },
+      "CrearAjuste": {
+        "properties": {
+          "id_sucursal": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Id Sucursal"
+          },
+          "id_variante": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Id Variante"
+          },
+          "variacion_cantidad": {
+            "type": "integer",
+            "maximum": 1000000.0,
+            "minimum": -1000000.0,
+            "title": "Variacion Cantidad"
+          },
+          "motivo": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 5,
+            "title": "Motivo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id_sucursal",
+          "id_variante",
+          "variacion_cantidad",
+          "motivo"
+        ],
+        "title": "CrearAjuste"
+      },
+      "CrearMovimiento": {
+        "properties": {
+          "id_sucursal": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Id Sucursal"
+          },
+          "id_variante": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Id Variante"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "entrada",
+              "salida"
+            ],
+            "title": "Tipo"
+          },
+          "cantidad": {
+            "type": "integer",
+            "maximum": 1000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Cantidad"
+          },
+          "motivo": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Motivo"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id_sucursal",
+          "id_variante",
+          "tipo",
+          "cantidad",
+          "motivo"
+        ],
+        "title": "CrearMovimiento"
+      },
+      "CrearProducto": {
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Codigo"
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Nombre"
+          },
+          "categoria": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Categoria"
+          },
+          "descripcion": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Descripcion",
+            "default": ""
+          },
+          "url_foto": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2083,
+                "minLength": 1,
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url Foto"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "codigo",
+          "nombre",
+          "categoria"
+        ],
+        "title": "CrearProducto"
+      },
+      "CrearSucursal": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Nombre"
+          },
+          "direccion": {
+            "type": "string",
+            "maxLength": 250,
+            "title": "Direccion",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nombre"
+        ],
+        "title": "CrearSucursal"
+      },
+      "CrearTransferencia": {
+        "properties": {
+          "id_sucursal_origen": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Id Sucursal Origen"
+          },
+          "id_sucursal_destino": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Id Sucursal Destino"
+          },
+          "id_variante": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Id Variante"
+          },
+          "cantidad": {
+            "type": "integer",
+            "maximum": 1000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Cantidad"
+          },
+          "observacion": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Observacion",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id_sucursal_origen",
+          "id_sucursal_destino",
+          "id_variante",
+          "cantidad"
+        ],
+        "title": "CrearTransferencia"
+      },
+      "CrearUsuario": {
+        "properties": {
+          "nombre_usuario": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_.-]{3,50}$",
+            "title": "Nombre Usuario"
+          },
+          "nombre_completo": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Nombre Completo"
+          },
+          "contrasena": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 12,
+            "title": "Contrasena"
+          },
+          "rol": {
+            "type": "string",
+            "enum": [
+              "administrador",
+              "operador"
+            ],
+            "title": "Rol",
+            "default": "operador"
+          },
+          "id_sucursal": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id Sucursal"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nombre_usuario",
+          "nombre_completo",
+          "contrasena"
+        ],
+        "title": "CrearUsuario"
+      },
+      "CrearVariante": {
+        "properties": {
+          "id_producto": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Id Producto"
+          },
+          "codigo_variante": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Codigo Variante"
+          },
+          "talla": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Talla"
+          },
+          "color": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Color"
+          },
+          "costo_referencia": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Costo Referencia",
+            "default": "0"
+          },
+          "precio_venta": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Precio Venta",
+            "default": "0"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id_producto",
+          "codigo_variante",
+          "talla",
+          "color"
+        ],
+        "title": "CrearVariante"
+      },
+      "Credenciales": {
+        "properties": {
+          "nombre_usuario": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Nombre Usuario"
+          },
+          "contrasena": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Contrasena"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "nombre_usuario",
+          "contrasena"
+        ],
+        "title": "Credenciales"
+      },
+      "DetalleValidacion": {
+        "properties": {
+          "ubicacion": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Ubicacion"
+          },
+          "mensaje": {
+            "type": "string",
+            "title": "Mensaje"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ubicacion",
+          "mensaje"
+        ],
+        "title": "DetalleValidacion"
+      },
+      "ErrorValidacion": {
+        "properties": {
+          "detalle": {
+            "items": {
+              "$ref": "#/components/schemas/DetalleValidacion"
+            },
+            "type": "array",
+            "title": "Detalle"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detalle"
+        ],
+        "title": "ErrorValidacion"
+      },
+      "MinimoExistencia": {
+        "properties": {
+          "cantidad_minima": {
+            "type": "integer",
+            "maximum": 1000000.0,
+            "minimum": 0.0,
+            "title": "Cantidad Minima"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "cantidad_minima"
+        ],
+        "title": "MinimoExistencia"
+      },
+      "RevisarAjuste": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "aprobado",
+              "rechazado"
+            ],
+            "title": "Decision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "decision"
+        ],
+        "title": "RevisarAjuste"
+      }
+    },
+    "securitySchemes": {
+      "Token_de_acceso": {
+        "type": "http",
+        "description": "Obtenga token_acceso al iniciar sesión y péguelo aquí.",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

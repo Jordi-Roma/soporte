@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: manaco
+      POSTGRES_USER: manaco
+      POSTGRES_PASSWORD: ${CLAVE_BD:?Configura CLAVE_BD en .env}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - manaco_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U manaco -d manaco"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  manaco_data:
