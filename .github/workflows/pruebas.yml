@@ -28,6 +28,7 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
+      MANACO_PROBAR_MODELO_REAL: '1'
       MANACO_URL_BD_PRUEBAS: postgresql+psycopg://manaco_pruebas:clave_exclusiva_para_pruebas@localhost:5432/manaco_pruebas
     steps:
       - name: Descargar código

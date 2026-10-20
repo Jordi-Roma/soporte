@@ -116,3 +116,30 @@ class CrearAjuste(Entrada):
 
 class RevisarAjuste(Entrada):
     decision: Literal['aprobado', 'rechazado']
+
+
+class CategoriaModelo(BaseModel):
+    codigo: str
+    nombre: str
+    codigo_sa6: str
+
+
+class PuntuacionCategoria(CategoriaModelo):
+    puntuacion: float = Field(ge=0, le=1)
+
+
+class ProductoSugerido(BaseModel):
+    id: int
+    codigo: str
+    nombre: str
+    categoria: str
+
+
+class ResultadoReconocimiento(BaseModel):
+    categoria_sugerida: PuntuacionCategoria
+    predicciones: list[PuntuacionCategoria]
+    confianza_baja: bool
+    umbral_sugerencia: float
+    requiere_confirmacion: bool
+    detalle: str
+    productos_sugeridos: list[ProductoSugerido]

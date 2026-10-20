@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "MANACO · Inventario inteligente",
-    "description": "API de inventario por sucursal. Cantidades en pares y moneda de referencia BOB. Reconocimiento visual pendiente de entrenamiento.",
+    "description": "API de inventario por sucursal. Cantidades en pares y moneda de referencia BOB. Reconocimiento visual de tres categorías de calzado con confirmación del usuario.",
     "version": "1.0.0"
   },
   "paths": {
@@ -1425,6 +1425,92 @@
           }
         ]
       }
+    },
+    "/reconocimiento/categorias": {
+      "get": {
+        "tags": [
+          "Reconocimiento"
+        ],
+        "summary": "Categorias Reconocimiento",
+        "operationId": "categorias_reconocimiento_reconocimiento_categorias_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CategoriaModelo"
+                  },
+                  "type": "array",
+                  "title": "Response Categorias Reconocimiento Reconocimiento Categorias Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ]
+      }
+    },
+    "/reconocimiento/predecir": {
+      "post": {
+        "tags": [
+          "Reconocimiento"
+        ],
+        "summary": "Predecir Calzado",
+        "operationId": "predecir_calzado_reconocimiento_predecir_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_predecir_calzado_reconocimiento_predecir_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultadoReconocimiento"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Datos de entrada no válidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorValidacion"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Token_de_acceso": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -1491,6 +1577,21 @@
         ],
         "title": "ActualizarProducto"
       },
+      "Body_predecir_calzado_reconocimiento_predecir_post": {
+        "properties": {
+          "imagen": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Imagen",
+            "description": "Fotografía JPG, PNG o WebP de un calzado"
+          }
+        },
+        "type": "object",
+        "required": [
+          "imagen"
+        ],
+        "title": "Body_predecir_calzado_reconocimiento_predecir_post"
+      },
       "CambiarContrasena": {
         "properties": {
           "contrasena_actual": {
@@ -1512,6 +1613,29 @@
           "contrasena_nueva"
         ],
         "title": "CambiarContrasena"
+      },
+      "CategoriaModelo": {
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "codigo_sa6": {
+            "type": "string",
+            "title": "Codigo Sa6"
+          }
+        },
+        "type": "object",
+        "required": [
+          "codigo",
+          "nombre",
+          "codigo_sa6"
+        ],
+        "title": "CategoriaModelo"
       },
       "CrearAjuste": {
         "properties": {
@@ -1898,6 +2022,112 @@
           "cantidad_minima"
         ],
         "title": "MinimoExistencia"
+      },
+      "ProductoSugerido": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "categoria": {
+            "type": "string",
+            "title": "Categoria"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "codigo",
+          "nombre",
+          "categoria"
+        ],
+        "title": "ProductoSugerido"
+      },
+      "PuntuacionCategoria": {
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "codigo_sa6": {
+            "type": "string",
+            "title": "Codigo Sa6"
+          },
+          "puntuacion": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Puntuacion"
+          }
+        },
+        "type": "object",
+        "required": [
+          "codigo",
+          "nombre",
+          "codigo_sa6",
+          "puntuacion"
+        ],
+        "title": "PuntuacionCategoria"
+      },
+      "ResultadoReconocimiento": {
+        "properties": {
+          "categoria_sugerida": {
+            "$ref": "#/components/schemas/PuntuacionCategoria"
+          },
+          "predicciones": {
+            "items": {
+              "$ref": "#/components/schemas/PuntuacionCategoria"
+            },
+            "type": "array",
+            "title": "Predicciones"
+          },
+          "confianza_baja": {
+            "type": "boolean",
+            "title": "Confianza Baja"
+          },
+          "umbral_sugerencia": {
+            "type": "number",
+            "title": "Umbral Sugerencia"
+          },
+          "requiere_confirmacion": {
+            "type": "boolean",
+            "title": "Requiere Confirmacion"
+          },
+          "detalle": {
+            "type": "string",
+            "title": "Detalle"
+          },
+          "productos_sugeridos": {
+            "items": {
+              "$ref": "#/components/schemas/ProductoSugerido"
+            },
+            "type": "array",
+            "title": "Productos Sugeridos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "categoria_sugerida",
+          "predicciones",
+          "confianza_baja",
+          "umbral_sugerencia",
+          "requiere_confirmacion",
+          "detalle",
+          "productos_sugeridos"
+        ],
+        "title": "ResultadoReconocimiento"
       },
       "RevisarAjuste": {
         "properties": {

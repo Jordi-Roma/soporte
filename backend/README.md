@@ -167,7 +167,8 @@ Carga opcional de **datos simulados**: dos sucursales, cinco productos, quince v
 2. Añadir PostgreSQL. Configurar `URL_BASE_DATOS` con su conexión; por compatibilidad con Railway también se admite la variable estándar `DATABASE_URL`.
 3. Configurar `SECRETO_JWT`, `USUARIO_ADMINISTRADOR`, `CLAVE_ADMINISTRADOR` y `ORIGENES_CORS` como arreglo JSON de direcciones exactas.
 4. El control de salud utiliza `/salud`. La aplicación utiliza el puerto proporcionado por Railway. Generar el dominio público y consultar `/documentacion`.
-5. Mantener una sola réplica durante la inicialización de este prototipo. No se cargan datos de demostración automáticamente.
+5. Mantener una sola réplica y un solo proceso de API para este prototipo. El Dockerfile incluye el modelo y TensorFlow CPU. La memoria necesaria debe verificarse en el servicio real: cada proceso carga su propia copia del modelo. La primera predicción tarda más; `/salud` no carga el modelo. No se cargan datos de demostración automáticamente.
+6. Publicar el frontend por HTTPS con `VITE_API_BASE_URL` apuntando a esta API, y añadir su origen exacto a `ORIGENES_CORS`. HTTPS permite utilizar la cámara. Probar una predicción después de desplegar; el servicio aún no se ha publicado ni verificado en Railway.
 
 El servicio aún no se ha publicado. Si se actualiza una instalación que conserva roles y estados de la versión anterior, ejecutar una vez `python -m app.actualizar_idioma` antes de iniciar la nueva API. La actualización local ya fue realizada y conserva los registros; los usuarios deben volver a iniciar sesión.
 
@@ -179,12 +180,26 @@ El servicio aún no se ha publicado. Si se actualiza una instalación que conser
 
 Las pruebas utilizan una base SQLite temporal. Para incluir concurrencia en PostgreSQL, configurar `MANACO_URL_BD_PRUEBAS` con una **base exclusiva para pruebas**: las pruebas borran y reconstruyen sus tablas. Nunca utilizar la base principal para ello.
 
-Verificación de la versión en español: **9 pruebas aprobadas en PostgreSQL 16**, incluidas operaciones simultáneas, permisos, revocación de sesiones, inventario, transferencias, ajustes, demostración, contrato de la API y mensajes de validación.
+Las pruebas cubren permisos, sesiones, inventario, operaciones simultáneas, transferencias, ajustes, contrato de la API y reconocimiento. Para ejecutar también el archivo de modelo real, configurar `MANACO_PROBAR_MODELO_REAL=1`; sin esa variable se omite la prueba pesada. El procesamiento de imágenes, sus límites y la ausencia de movimientos automáticos se verifican siempre.
+
+Comprobación local de la integración: **18 pruebas aprobadas en PostgreSQL 16**, incluida la carga e inferencia del modelo real. La prueba de la conexión desde el proxy del frontend también devolvió tres puntuaciones sin cambios de inventario. Se utilizaron imágenes sintéticas para validar el funcionamiento técnico, sin medir exactitud.
 
 El archivo `esquema.sql` contiene el esquema físico generado desde los modelos en español. Los respaldos previos están en `respaldos/`, excluido de Git. Los cambios futuros de estructura requieren migraciones: `create_all` crea tablas faltantes y no modifica tablas existentes.
 
 ## Reconocimiento y límites del prototipo
 
-`/reconocimiento/estado` indica `sin_entrenar`. El modelo necesita fotografías etiquetadas, entrenamiento y evaluación antes de integrarlo. No se devuelven predicciones simuladas.
+El modelo aportado está incluido en `modelos_ia/`. La API ofrece, con sesión iniciada:
 
-La fotografía se guarda como URL HTTP/HTTPS; no hay carga de archivos en esta versión. No se incluyen facturación, compras completas, recuperación de contraseña por correo ni recepción parcial con discrepancias. La transferencia confirma un lote completo de una variante. El historial cubre movimientos y sus responsables; no todos los cambios del catálogo. Para operación pública sostenida, añadir límites de intentos de inicio de sesión, copias de seguridad y migraciones versionadas.
+- `GET /reconocimiento/estado`: disponibilidad, categorías y límites.
+- `GET /reconocimiento/categorias`: las tres categorías para los formularios del catálogo.
+- `POST /reconocimiento/predecir`: archivo `imagen` mediante `multipart/form-data`; JPG, PNG o WebP, hasta 8 MB y 16 millones de píxeles por defecto.
+
+La respuesta contiene `categoria_sugerida`, las tres `predicciones` con `puntuacion` entre 0 y 1, `confianza_baja`, `requiere_confirmacion` y `productos_sugeridos`. Analizar una foto no cambia las existencias. El usuario confirma producto, talla/color, sucursal, tipo y cantidad; solo después se llama a `POST /movimientos` con las mismas reglas de permisos y stock.
+
+El modelo distingue categorías, no códigos de producto ni tallas. Las categorías del catálogo se pueden elegir al crear o editar productos. Se aceptan el nombre completo, el identificador de clase o su código SA6. Los valores anteriores, como Escolar, se conservan: deben asignarse manualmente a una categoría compatible si corresponde.
+
+La imagen se orienta según EXIF, convierte a RGB y ajusta a 224 × 224. Los píxeles se entregan en 0..255 porque el modelo ya incluye su normalización. Se carga una sola vez por proceso al analizar la primera foto; esa primera solicitud tarda más. La ejecución usa CPU. `UMBRAL_RECONOCIMIENTO=0.70` es una regla de revisión, no una exactitud demostrada. Ver detalles y huella del archivo en `modelos_ia/README.md`.
+
+No se recibió un conjunto de evaluación: falta medir la exactitud con fotografías reales ajenas al entrenamiento. El modelo siempre compara sus tres clases, incluso ante imágenes ajenas al calzado. Sus puntuaciones no prueban por sí solas que una identificación sea correcta.
+
+La fotografía permanente del catálogo se guarda como URL HTTP/HTTPS. Las fotos enviadas al reconocimiento se procesan en memoria y no se incorporan al catálogo. No se incluyen facturación, compras completas, recuperación de contraseña por correo ni recepción parcial con discrepancias. La transferencia confirma un lote completo de una variante. El historial cubre movimientos y sus responsables; no todos los cambios del catálogo. Para operación pública sostenida, añadir límites de intentos de inicio de sesión, copias de seguridad y migraciones versionadas.

@@ -1,9 +1,13 @@
 from typing import Annotated
-from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as ExcepcionHTTP
+from starlette.concurrency import run_in_threadpool
+from .categorias_calzado import CATEGORIAS, coincide_categoria
+from .reconocimiento import (obtener_reconocedor, ReconocedorCalzado, ImagenNoValida,
+                             ImagenDemasiadoGrande, ModeloNoDisponible)
 from sqlalchemy import func, inspect, or_, select, text, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -15,7 +19,7 @@ from .seguridad import HASH_FICTICIO, administrador, acceso_sucursal, usuario_ac
 
 app = FastAPI(title='MANACO · Inventario inteligente', version='1.0.0',
               description='API de inventario por sucursal. Cantidades en pares y moneda de referencia BOB. '
-                          'Reconocimiento visual pendiente de entrenamiento.',
+                          'Reconocimiento visual de tres categorías de calzado con confirmación del usuario.',
               docs_url='/documentacion', redoc_url='/referencia', openapi_url='/esquema-api.json',
               responses={422: {'model': s.ErrorValidacion, 'description': 'Datos de entrada no válidos'}})
 app.add_middleware(CORSMiddleware, allow_origins=obtener_configuracion().origenes_cors,
@@ -354,7 +358,7 @@ def tablero(base_datos: BD, usuario: Autenticado, id_sucursal: int | None = Quer
     resultado = {'pares_disponibles': total, 'existencias_bajo_minimo': bajas, 'pares_en_transito': transito,
               'ajustes_pendientes': base_datos.scalar(select(func.count()).select_from(pendientes.subquery())),
               'productos_activos': base_datos.scalar(select(func.count()).select_from(m.Producto).where(m.Producto.activo)),
-              'estado_reconocimiento': 'sin_entrenar'}
+              'estado_reconocimiento': obtener_reconocedor().estado()['estado']}
     if usuario.rol == 'administrador':
         resultado['valor_estimado_inventario_bob'] = base_datos.scalar(select(func.coalesce(
             func.sum(base.c.cantidad * m.Variante.costo_referencia), 0)).select_from(base).join(
@@ -363,6 +367,43 @@ def tablero(base_datos: BD, usuario: Autenticado, id_sucursal: int | None = Quer
 
 
 @app.get('/reconocimiento/estado', tags=['Reconocimiento'])
-def estado_reconocimiento(usuario: Autenticado):
-    return {'disponible': False, 'estado': 'sin_entrenar',
-            'detalle': 'Pendiente: fotografías etiquetadas, entrenamiento y evaluación del modelo.'}
+def estado_reconocimiento(usuario: Autenticado,
+                           reconocedor: Annotated[ReconocedorCalzado, Depends(obtener_reconocedor)]):
+    return {**reconocedor.estado(), 'limite_imagen_mb': obtener_configuracion().max_imagen_mb}
+
+
+@app.get('/reconocimiento/categorias', response_model=list[s.CategoriaModelo], tags=['Reconocimiento'])
+def categorias_reconocimiento(usuario: Autenticado):
+    return CATEGORIAS
+
+
+@app.post('/reconocimiento/predecir', response_model=s.ResultadoReconocimiento, tags=['Reconocimiento'])
+async def predecir_calzado(base_datos: BD, usuario: Autenticado,
+                          reconocedor: Annotated[ReconocedorCalzado, Depends(obtener_reconocedor)],
+                          imagen: UploadFile = File(description='Fotografía JPG, PNG o WebP de un calzado')):
+    limite = obtener_configuracion().max_imagen_mb * 1024 * 1024
+    try:
+        if imagen.content_type not in {'image/jpeg', 'image/png', 'image/webp', 'application/octet-stream'}:
+            raise HTTPException(415, 'Use una imagen JPG, PNG o WebP.')
+        contenido = await imagen.read(limite + 1)
+    finally:
+        await imagen.close()
+    if len(contenido) > limite:
+        raise HTTPException(413, f'La imagen supera el máximo de {obtener_configuracion().max_imagen_mb} MB.')
+    if not contenido:
+        raise HTTPException(400, 'La imagen está vacía.')
+    try:
+        resultado = await run_in_threadpool(reconocedor.predecir, contenido)
+    except ImagenDemasiadoGrande as error:
+        raise HTTPException(413, str(error)) from error
+    except ImagenNoValida as error:
+        raise HTTPException(400, str(error)) from error
+    except ModeloNoDisponible as error:
+        raise HTTPException(503, str(error)) from error
+    categoria = resultado['categoria_sugerida']
+    productos = base_datos.scalars(select(m.Producto).where(m.Producto.activo).order_by(m.Producto.id))
+    resultado['productos_sugeridos'] = [
+        {'id': producto.id, 'codigo': producto.codigo, 'nombre': producto.nombre, 'categoria': producto.categoria}
+        for producto in productos if coincide_categoria(producto.categoria, categoria)
+    ]
+    return resultado

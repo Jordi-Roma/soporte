@@ -1,32 +1,8 @@
-import os
-import atexit
 from decimal import Decimal
-import tempfile
-from pathlib import Path
 import pytest
-
-TEST_DIRECTORY = tempfile.TemporaryDirectory(prefix='manaco-tests-')
-os.environ['URL_BASE_DATOS'] = os.environ.get('MANACO_URL_BD_PRUEBAS', 'sqlite:///' + str(Path(TEST_DIRECTORY.name) / 'test.base_datos'))
-os.environ['SECRETO_JWT'] = 'test-secret-only-for-automated-tests-1234567890'
-os.environ['USUARIO_ADMINISTRADOR'] = 'administrador'
-os.environ['CLAVE_ADMINISTRADOR'] = 'Administrador-test-2026!'
-
-from fastapi.testclient import TestClient
 from sqlalchemy import func, select
-from app.base_datos import Base, SesionLocal, motor
-from app.inicializar_bd import principal as inicializar
-from app.principal import app
+from app.base_datos import SesionLocal, motor
 from app.modelos import Movimiento, Existencia, Transferencia
-
-atexit.register(motor.dispose)
-
-
-@pytest.fixture
-def api():
-    Base.metadata.drop_all(motor)
-    inicializar()
-    with TestClient(app) as client:
-        yield client
 
 
 def autenticar(api, nombre_usuario='administrador', contrasena='Administrador-test-2026!'):
@@ -135,7 +111,7 @@ def test_validacion_duplicados_y_cambio_de_contrasena(api):
         'contrasena_actual': 'Administrador-test-2026!', 'contrasena_nueva': 'New-administrador-test-2026!'}).status_code == 200
     assert api.get('/autenticacion/mi-perfil', headers=cabeceras).status_code == 401
     assert autenticar(api, contrasena='New-administrador-test-2026!')
-    assert api.get('/reconocimiento/estado', headers=autenticar(api, contrasena='New-administrador-test-2026!')).json()['disponible'] is False
+    assert api.get('/reconocimiento/estado', headers=autenticar(api, contrasena='New-administrador-test-2026!')).json()['disponible'] is True
 
 
 def test_documentacion_y_datos_de_demostracion(api):
@@ -162,7 +138,7 @@ def test_contrato_y_errores_en_espanol(api):
     assert any(x['mensaje'] == 'Campo no permitido' for x in detalle)
     assert all('input' not in x for x in detalle)
     assert api.get('/branches', headers=cabeceras).json() == {'detalle': 'Ruta no encontrada'}
-    assert api.get('/reconocimiento/estado', headers=cabeceras).json()['estado'] == 'sin_entrenar'
+    assert api.get('/reconocimiento/estado', headers=cabeceras).json()['estado'] == 'listo'
     contrato = api.get('/esquema-api.json').json()
     assert contrato['components']['schemas']['CrearUsuario']['properties']['rol']['enum'] == ['administrador', 'operador']
     assert set(contrato['components']['schemas']['Credenciales']['properties']) == {'nombre_usuario', 'contrasena'}

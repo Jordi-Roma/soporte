@@ -52,11 +52,11 @@ Roles: `administrador` y `operador`. El frontend muestra las acciones que corres
 | Movimientos | `GET /movimientos` | `POST /movimientos`: registrar entrada o salida. |
 | Transferencias | `GET /transferencias` | `POST /transferencias`: enviar; `POST /transferencias/{id_transferencia}/recibir`: recibir. |
 | Ajustes | `GET /ajustes` | `POST /ajustes`: solicitar; `POST /ajustes/{id_ajuste}/revisar`: revisar, solo administrador. |
-| Reconocimiento | `GET /reconocimiento/estado` | Mostrar que está pendiente de entrenamiento. |
+| Reconocimiento | `GET /reconocimiento/estado`, `GET /reconocimiento/categorias` | `POST /reconocimiento/predecir`: clasificar una foto, confirmar producto y variante antes de registrar. |
 
 Crear una sucursal recibe `nombre` y `direccion`. La respuesta incluye `id`, `nombre`, `direccion` y `activo`. Los ejemplos de productos, usuarios, variantes y movimientos están en el README.
 
-Los formularios deben respetar las acciones disponibles. Por ejemplo, no hay endpoints para editar sucursales, borrar movimientos, recuperar contraseñas por correo ni cargar fotografías como archivos. La foto del producto se registra mediante `url_foto`.
+Los formularios deben respetar las acciones disponibles. Por ejemplo, no hay endpoints para editar sucursales, borrar movimientos, recuperar contraseñas por correo ni guardar fotografías del catálogo como archivos. La foto permanente del producto se registra mediante `url_foto`; la foto de reconocimiento sí se envía como archivo y se procesa en memoria.
 
 ## Listas, cantidades y errores
 
@@ -69,4 +69,25 @@ Los formularios deben respetar las acciones disponibles. Por ejemplo, no hay end
 
 Valores permitidos: movimientos `entrada` y `salida`; transferencias `en_transito` y `recibida`; ajustes `pendiente`, `aprobado` y `rechazado`. Para revisar un ajuste se envía `{"decision":"aprobado"}` o `{"decision":"rechazado"}`.
 
-Antes de registrar un movimiento, confirmar producto, variante y cantidad. El reconocimiento visual todavía no está disponible; la selección de productos es manual.
+## Reconocimiento visual
+
+Enviar `FormData` con el campo `imagen` a `POST /reconocimiento/predecir`, incluyendo el token. No fijar `Content-Type`: el navegador añade el límite de multipart.
+
+```javascript
+const cuerpo = new FormData()
+cuerpo.append('imagen', archivo)
+const respuesta = await fetch(`${URL_API}/reconocimiento/predecir`, {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${token}` },
+  body: cuerpo,
+})
+const resultado = await respuesta.json()
+```
+
+Se admiten JPG, PNG y WebP (8 MB y 16 millones de píxeles por defecto). Los errores incluyen 400 para imagen dañada, 413 para tamaño/resolución, 415 para formato y 503 para modelo no disponible.
+
+El resultado ofrece `categoria_sugerida`, `predicciones`, `confianza_baja`, `productos_sugeridos` y `requiere_confirmacion`. Cada categoría contiene `codigo`, `nombre`, `codigo_sa6`; cada predicción añade `puntuacion`. No presentar esa puntuación como exactitud verificada.
+
+Las tres categorías compatibles se obtienen de `/reconocimiento/categorias`. Al crear/editar un producto, guardar el `nombre` de la categoría. La categoría filtra candidatos; el usuario elige el producto exacto y una variante activa. No se obtiene talla/color automáticamente.
+
+El flujo implementado es foto → categoría → producto → variante → sucursal/cantidad → confirmación → `POST /movimientos`. La predicción no cambia el inventario. La primera predicción carga el modelo y puede tardar unos segundos. La cámara exige HTTPS o localhost y permiso del usuario. Falta evaluar la exactitud con fotografías reales independientes del entrenamiento.
