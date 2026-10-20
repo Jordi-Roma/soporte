@@ -35,6 +35,6 @@ Consultar [la guía de integración](backend/GUIA_FRONTEND.md) y el [contrato de
 
 ## Railway
 
-Configurar la raíz del servicio como `/backend` y, si se especifica la ruta del archivo de configuración, usar `/backend/railway.json`. Los comandos de inicio se ejecutan desde esa carpeta. Las variables de PostgreSQL y autenticación se describen en el [README del backend](backend/README.md).
+El repositorio incluye `Dockerfile` y `railway.json` en la raíz: Railway puede construir el backend sin cambiar Root Directory. También se conserva la opción de usar `/backend` como raíz y `/backend/railway.json` como configuración. Ambas variantes incluyen el modelo y utilizan `/salud` para verificar el servicio. Las variables de PostgreSQL y autenticación se describen en el [README del backend](backend/README.md).
 
 El repositorio Git y las pruebas de GitHub Actions permanecen en la carpeta principal. El flujo ejecuta las pruebas dentro de `backend`.

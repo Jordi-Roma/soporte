@@ -1,0 +1,14 @@
+.git
+.github
+frontend
+backend/.env*
+backend/.venv
+backend/__pycache__
+backend/**/__pycache__
+backend/.pytest_cache
+backend/tests
+backend/respaldos
+**/*.db
+**/*.dump
+**/*.backup
+**/*.log
